@@ -1,0 +1,6 @@
+.idea/*
+*.pyc
+*.pyo
+*/*.pyc
+__pycache__
+logs/*
