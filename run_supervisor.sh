@@ -1,26 +1,31 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-SUPERVISORCLS=($(pidof supervisorctl))
+# Refreshing supervisor
 
-for i in "${SUPERVISORCLS[@]}"
-do
-    echo $i
-    if [ $i ];then
-        exec sudo kill -9 $i
-    fi
-done
-#ERROR0=$(sudo supervisord -c /etc/supervisor/supervisord.conf  2>&1)
+ERROR0=$(sudo supervisord -c /etc/supervisor/supervisord.conf  2>&1)
+
+if [ "$ERROR0" ];then
+    sudo pkill supervisord
+    sudo supervisord -c /etc/supervisor/supervisord.conf
+    echo restarted supervisord
+fi
+
+ERROR1=$(sudo supervisord -c /etc/supervisor/supervisord.conf  2>&1)
+
+if [ "$ERROR1" ];then
+     sudo pkill supervisorctl
+     sudo supervisorctl -c /etc/supervisor/supervisord.conf
+     echo restarted supervisorctl
+fi
+
+##!/bin/bash
 #
-#if [ "$ERROR0" ];then
-#    exec sudo pkill supervisord
-#    exec sudo supervisord -c /etc/supervisor/supervisord.conf
-#    echo restarted supervisord
-#fi
+#SUPERVISORCLS=($(pidof supervisorctl))
 #
-#ERROR1=$(sudo supervisord -c /etc/supervisor/supervisord.conf  2>&1)
-#
-#if [ "$ERROR1" ];then
-#    exec sudo pkill -9 supervisorctl
-#    exec sudo supervisorctl -c /etc/supervisor/supervisord.conf
-#    echo restarted supervisorctl
-#fi
+#for i in "${SUPERVISORCLS[@]}"
+#    do
+#        echo $i
+#        if [ $i ];then
+#            sudo kill -9 ${i}
+#        fi
+#    done

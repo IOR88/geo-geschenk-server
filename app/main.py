@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from flask import render_template
 from upload_service import UploadService, MongoDBService
 from utils import random_charts_generator, encode_mongo_data
 from flask import make_response
@@ -13,18 +12,15 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 doc_session = ''
 
-
 @app.route('/', methods=['GET'])
 def main():
+    # TODO we should generate some unique ID, does Flask support session ?
     print(doc_session)
-    return render_template('base.html')
+    return "MR. MIAU TEST PAGE :)"
 
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    app.logger.warning('TEST')
-    app.logger.error('TEST')
-    app.logger.info('TEST')
     global doc_session
     doc_session = random_charts_generator()
     try:
@@ -37,9 +33,6 @@ def upload():
         res = {'status': 200, 'data': data}
     except Exception as e:
         print(e)
-        app.logger.warning(e)
-        app.logger.error(e)
-        app.logger.info(e)
         res = {'status': 401, 'data': []}
 
     return jsonify(res)
@@ -61,12 +54,4 @@ def search():
     return make_response(jsonify(mongo_translation))
 
 if __name__ == '__main__':
-    # handler = RotatingFileHandler('logs/flask-logs.log', maxBytes=10000, backupCount=1)
-    # handler.setLevel(logging.INFO)
-    # app.logger.addHandler(handler)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.WARNING)
-    app.logger.addHandler(stream_handler)
-
-    # test_fetching_data_via_urllib(UploadService)
-    app.run(port=5001)
+    app.run()
