@@ -22,6 +22,7 @@ export PYTHONPATH=$FLASKDIR:$PYTHONPATH
 # Start your unicorn
 exec ${GUNICORN} ${FLASK_WSGI_MODULE}:app -b ${HOST} \
   --name $NAME \
+  --worker-class eventlet \
   --workers $NUM_WORKERS \
   --user=$USER \
   --enable-stdio-inheritance \

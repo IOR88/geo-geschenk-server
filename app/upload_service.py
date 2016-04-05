@@ -9,17 +9,21 @@ class UploadService:
         self.data = self.__get__file(request=request, url=url)
         self.file_raw = self.__read__data__(data=self.data)
         self.file = self.__decode_file__(file=self.file_raw)
-        self.mongo = MongoDBService(port=27017, url='localhost', db='test')
-        self.mongo.save_doc(name=session, doc=self.file)
-        self.geojson = GeoJSONService(geojson_doc_type="FeatureCollection", data=self.file)
+        # TODO
+        # self.mongo = MongoDBService(port=27017, url='localhost', db='test')
+        # self.mongo.save_doc(name=session, doc=self.file)
+        # TODO update geoJSONSERVICE
+        # self.geojson = GeoJSONService(geojson_doc_type="FeatureCollection", data=self.file)
 
     @staticmethod
     def __get__file(**kwargs):
-        file = kwargs.get('request', None)
-        if file is not None:
-            return kwargs['request'].files['file']
-        else:
-            return get_data(url=kwargs['url'])
+        # TODO
+        # file = kwargs.get('request', None)
+        # if file is not None:
+        #     return kwargs['request'].files['file']
+        # else:
+        print('???')
+        return get_data(url=kwargs['url'])
 
     @staticmethod
     def __read__data__(data=None):
