@@ -38,14 +38,14 @@ def upload():
         # if not (request.files.get('file', None) is None):
         #     UploadService(request=request, session=doc_session)
         # else:
-        print('1?')
-        UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/master/build_big_data/test_data/ExampleDataPoint.json',
-                      session=doc_session)
+        upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
+                                           'master/build_big_data/test_data/ExampleDataPoint.json',
+                                       session=doc_session)
         print('2?')
-
-        # data = upload_service.response()
-        socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, 5))
-        socket_thread.start()
+        data = upload_service.response()
+        print(data)
+        # socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
+        # socket_thread.start()
         res = {'status': 200}
     except Exception as e:
         print(e)

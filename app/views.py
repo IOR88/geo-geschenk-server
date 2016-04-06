@@ -1,13 +1,14 @@
 import time
 from socket import AF_INET, SOCK_STREAM
-from flask_socketio import emit
 
 from geosquizzy.socket.gs_client import GsSocketClient
 
 
-def view_geosquizzy_listening(app, timeout):
+def view_geosquizzy_listening(app, socket_io, timeout):
+    # with app.app_context():
+    # http://kronosapiens.github.io/blog/2014/08/14/understanding-contexts-in-flask.html
     with app.test_request_context('geosquizzy'):
-        emit('geosquizzy', {'status': 1, 'data': None})
+        socket_io.emit('geosquizzy', {'status': 1, 'data': None})
 
         try:
             client = GsSocketClient(HOST='localhost',
@@ -22,11 +23,11 @@ def view_geosquizzy_listening(app, timeout):
                 try:
                     data = client.socket.recv(1024)
                     if data:
-                        emit('geosquizzy', {'status': 2, 'data': str(data, 'utf-8')})
+                        socket_io.emit('geosquizzy', {'status': 2, 'data': str(data, 'utf-8')})
                 except (Exception,) as err:
                     print(err)
 
         except (Exception,) as err:
             print(err)
 
-        emit('geosquizzy', {'status': 0, 'data': None})
+        socket_io.emit('geosquizzy', {'status': 0, 'data': None})

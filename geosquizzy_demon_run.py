@@ -9,7 +9,7 @@ if __name__ == "__main__":
                     std_out='/home/ing/PycharmProjects/geo-geschenk-server/geo-geschenk-server/logs/out.txt',
                     std_err='/home/ing/PycharmProjects/geo-geschenk-server/geo-geschenk-server/logs/err.txt',
                     HOST='localhost',
-                    PORT=8030,
+                    PORT=6004,
                     FAMILY=AF_INET,
                     TYPE=SOCK_STREAM,
                     CONNECTIONS=10)

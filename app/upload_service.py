@@ -3,17 +3,23 @@ from pymongo import MongoClient
 import json
 from utils import get_data
 
+# TODO TEMP
+geojson_options = {'mode': 'static', 'geojson_type': 'FeatureCollection'}
+outcome_options = {}
+optimization_options = {'batch': 100, 'loss': -10.0}
+
 
 class UploadService:
     def __init__(self, request=None, session=None, url=None):
         self.data = self.__get__file(request=request, url=url)
         self.file_raw = self.__read__data__(data=self.data)
         self.file = self.__decode_file__(file=self.file_raw)
-        # TODO
-        # self.mongo = MongoDBService(port=27017, url='localhost', db='test')
-        # self.mongo.save_doc(name=session, doc=self.file)
-        # TODO update geoJSONSERVICE
-        # self.geojson = GeoJSONService(geojson_doc_type="FeatureCollection", data=self.file)
+        self.mongo = MongoDBService(port=27017, url='localhost', db='test')
+        self.mongo.save_doc(name=session, doc=self.file)
+        self.geojson = GeoJSONService(geojson_options=geojson_options,
+                                      outcome_options=outcome_options,
+                                      optim=optimization_options,
+                                      data=self.file)
 
     @staticmethod
     def __get__file(**kwargs):
@@ -22,7 +28,6 @@ class UploadService:
         # if file is not None:
         #     return kwargs['request'].files['file']
         # else:
-        print('???')
         return get_data(url=kwargs['url'])
 
     @staticmethod
@@ -38,9 +43,11 @@ class UploadService:
 
 
 class GeoJSONService:
-    def __init__(self, geojson_doc_type=None, data=None):
-        self.geo_squizzy = GeoSquizzy(geojson_doc_type=geojson_doc_type)
-        self.geo_squizzy.geo_structure.start(geojson=data, is_doc=True)
+    def __init__(self, geojson_options=None, outcome_options=None, optim=None, data=None):
+        self.geo_squizzy = GeoSquizzy(geojson_options=geojson_options,
+                                      outcome_options=outcome_options,
+                                      optim=optim)
+        self.geo_squizzy.start(geojson=data)
 
     @staticmethod
     def __update_mongo__(key=None):
@@ -49,7 +56,7 @@ class GeoJSONService:
 
     def get_data(self):
         # we have to adjust keys to mongoDB features query
-        return [self.__update_mongo__(key=x) for x in self.geo_squizzy.geo_structure.tree.get_all_leafs_paths()]
+        return [self.__update_mongo__(key=x) for x in self.geo_squizzy.get_results()]
 
 
 class MongoDBService:
