@@ -4,6 +4,7 @@ from flask import make_response
 from bson.json_util import dumps, loads
 import json
 import threading
+import multiprocessing
 
 from upload_service import (UploadService, MongoDBService)
 from utils import (random_charts_generator, encode_mongo_data)
@@ -25,11 +26,11 @@ def main():
 @socket_io.on('connect')
 def connect():
     print('connected')
+    pass
 
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    print('upload request')
     global doc_session
     doc_session = random_charts_generator()
     try:
@@ -38,14 +39,25 @@ def upload():
         # if not (request.files.get('file', None) is None):
         #     UploadService(request=request, session=doc_session)
         # else:
-        upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
-                                           'master/build_big_data/test_data/ExampleDataPoint.json',
-                                       session=doc_session)
-        print('2?')
-        data = upload_service.response()
-        print(data)
-        # socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
-        # socket_thread.start()
+        socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
+        upload_params = {'url': 'https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
+                                'master/build_big_data/test_data/ExampleDataPoint.json',
+                         'session': doc_session}
+        upload_process = multiprocessing.Process(target=UploadService,
+                                                 kwargs=upload_params)
+
+        socket_thread.start()
+        upload_process.start()
+
+        # TODO geo-squizzy has to add ending signal
+        # upload_process.join()
+        # socket_thread.join()
+
+        # upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
+        #                                    'master/build_big_data/test_data/ExampleDataPoint.json',
+        #                                session=doc_session)
+
+        # data = upload_service.response()
         res = {'status': 200}
     except Exception as e:
         print(e)

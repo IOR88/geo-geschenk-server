@@ -1,12 +1,19 @@
 from geosquizzy.geosquizzy import GeoSquizzy
-from pymongo import MongoClient
-import json
 from utils import get_data
+
+import json
+from pymongo import MongoClient
+from socket import (AF_INET, SOCK_STREAM)
+
 
 # TODO TEMP
 geojson_options = {'mode': 'static', 'geojson_type': 'FeatureCollection'}
 outcome_options = {}
-optimization_options = {'batch': 100, 'loss': -10.0}
+optimization_options = {'batch': 1, 'loss': 1.0}
+socket_options = {'HOST': 'localhost',
+                  'PORT': 6004,
+                  'FAMILY': AF_INET,
+                  'TYPE': SOCK_STREAM}
 
 
 class UploadService:
@@ -18,6 +25,7 @@ class UploadService:
         self.mongo.save_doc(name=session, doc=self.file)
         self.geojson = GeoJSONService(geojson_options=geojson_options,
                                       outcome_options=outcome_options,
+                                      socket_options=socket_options,
                                       optim=optimization_options,
                                       data=self.file)
 
@@ -43,10 +51,15 @@ class UploadService:
 
 
 class GeoJSONService:
-    def __init__(self, geojson_options=None, outcome_options=None, optim=None, data=None):
+    def __init__(self, geojson_options=None,
+                       outcome_options=None,
+                       optim=None,
+                       data=None,
+                       socket_options=None):
         self.geo_squizzy = GeoSquizzy(geojson_options=geojson_options,
                                       outcome_options=outcome_options,
-                                      optim=optim)
+                                      optim=optim,
+                                      socket_options=socket_options)
         self.geo_squizzy.start(geojson=data)
 
     @staticmethod

@@ -1,7 +1,7 @@
 import time
 from socket import AF_INET, SOCK_STREAM
 
-from geosquizzy.socket.gs_client import GsSocketClient
+from geosquizzy.gs_socket.gs_client import GsSocketClient
 
 
 def view_geosquizzy_listening(app, socket_io, timeout):
@@ -12,20 +12,19 @@ def view_geosquizzy_listening(app, socket_io, timeout):
 
         try:
             client = GsSocketClient(HOST='localhost',
-                                    PORT=8030,
+                                    PORT=6004,
                                     FAMILY=AF_INET,
                                     TYPE=SOCK_STREAM)
             client.connect()
-            start = time.time()
+            # start = time.time()
             while True:
-                if time.time() - start > timeout:
-                    break
-                try:
-                    data = client.socket.recv(1024)
-                    if data:
-                        socket_io.emit('geosquizzy', {'status': 2, 'data': str(data, 'utf-8')})
-                except (Exception,) as err:
-                    print(err)
+                # connection will never end because demon is running in bg
+                # geosquizzy has to send some 0 message that it has finished
+                data = client.socket.recv(1024)
+                if data:
+                    # TODO
+                    res = eval(str(data, 'utf-8'))
+                    socket_io.emit('geosquizzy', {'status': 2, 'data': res})
 
         except (Exception,) as err:
             print(err)
