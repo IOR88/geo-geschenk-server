@@ -26,51 +26,23 @@ def connect():
     global doc_session
     doc_session = random_charts_generator()
 
-
-# @app.route('/upload', methods=['POST'])
-# def upload():
-#     # TODO possible to handle file sending by socket ? streaming ?
-#     global doc_session
-#     # doc_session = random_charts_generator()
-#     try:
-#         # TODO
-#         # multiprocessing here
-#         # if not (request.files.get('file', None) is None):
-#         #     UploadService(request=request, session=doc_session)
-#         # else:
-#         socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
-#         upload_params = {'url': 'https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
-#                                 'master/build_big_data/test_data/ExampleDataPoint.json',
-#                          'session': doc_session}
-#         upload_process = multiprocessing.Process(target=UploadService,
-#                                                  kwargs=upload_params)
-#
-#         socket_thread.start()
-#         upload_process.start()
-#
-#         socket_thread.join()
-#         upload_process.join()
-#
-#         # upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
-#         #                                    'master/build_big_data/test_data/ExampleDataPoint.json',
-#         #                                session=doc_session)
-#
-#         # data = upload_service.response()
-#         res = {'status': 200}
-#     except Exception as e:
-#         print(e)
-#         res = {'status': 401}
-#
-#     return jsonify(res)
+@socket_io.on('upload')
+def upload(data):
+    # TODO file upload
+    pass
 
 @socket_io.on('demo')
 def demo():
+    """
+    starts one new socket_thread which connect with GsDemon and
+    listen for its broadcasts and emit it by socket to client
+
+    when socket is ready and listening it start concurrent process
+    which consider uploading GeoJSON do mongodb and starting geosquizzy
+    algorithm execution
+    """
     global doc_session
     try:
-        # multiprocessing here
-        # if not (request.files.get('file', None) is None):
-        #     UploadService(request=request, session=doc_session)
-        # else:
         socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
         upload_params = {'url': 'https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
                                 'master/build_big_data/test_data/ExampleDataPoint.json',
@@ -84,12 +56,6 @@ def demo():
         socket_thread.join()
         upload_process.join()
 
-        # upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
-        #                                    'master/build_big_data/test_data/ExampleDataPoint.json',
-        #                                session=doc_session)
-
-        # data = upload_service.response()
-        # res = {'status': 200}
     except (Exception,) as e:
         print(e)
         socket_io.emit('demo', {'code': 1501, 'message': 'Server Error'})

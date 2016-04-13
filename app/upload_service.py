@@ -6,11 +6,11 @@ from pymongo import MongoClient
 from socket import (AF_INET, SOCK_STREAM)
 
 
-# TODO TEMP
-geojson_options = {'mode': 'static', 'geojson_type': 'FeatureCollection'}
-outcome_options = {}
-optimization_options = {'batch': 1, 'loss': 1.0}
-socket_options = {'HOST': 'localhost',
+# TODO
+GEOJSON_OPTIONS = {'mode': 'static', 'geojson_type': 'FeatureCollection'}
+OUTCOME_OPTIONS = {}
+OPTIMIZATION_OPTIONS = {'batch': 1, 'loss': 1.0}
+SOCKET_OPTIONS = {'HOST': 'localhost',
                   'PORT': 6004,
                   'FAMILY': AF_INET,
                   'TYPE': SOCK_STREAM}
@@ -23,10 +23,10 @@ class UploadService:
         self.file = self.__decode_file__(file=self.file_raw)
         self.mongo = MongoDBService(port=27017, url='localhost', db='test')
         self.mongo.save_doc(name=session, doc=self.file)
-        self.geojson = GeoJSONService(geojson_options=geojson_options,
-                                      outcome_options=outcome_options,
-                                      socket_options=socket_options,
-                                      optim=optimization_options,
+        self.geojson = GeoJSONService(geojson_options=GEOJSON_OPTIONS,
+                                      outcome_options=OUTCOME_OPTIONS,
+                                      socket_options=SOCKET_OPTIONS,
+                                      optim=OPTIMIZATION_OPTIONS,
                                       data=self.file)
 
     @staticmethod
@@ -51,11 +51,13 @@ class UploadService:
 
 
 class GeoJSONService:
-    def __init__(self, geojson_options=None,
-                       outcome_options=None,
-                       optim=None,
-                       data=None,
-                       socket_options=None):
+    def __init__(self,
+                 geojson_options=None,
+                 outcome_options=None,
+                 optim=None,
+                 data=None,
+                 socket_options=None):
+
         self.geo_squizzy = GeoSquizzy(geojson_options=geojson_options,
                                       outcome_options=outcome_options,
                                       optim=optim,
