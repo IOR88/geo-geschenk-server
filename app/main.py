@@ -49,9 +49,8 @@ def upload():
         socket_thread.start()
         upload_process.start()
 
-        # TODO geo-squizzy has to add ending signal
-        # upload_process.join()
-        # socket_thread.join()
+        socket_thread.join()
+        upload_process.join()
 
         # upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
         #                                    'master/build_big_data/test_data/ExampleDataPoint.json',
