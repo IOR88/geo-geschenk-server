@@ -22,11 +22,15 @@ def view_geosquizzy_listening(app, socket_io, timeout):
                 # geosquizzy has to send some 0 message that it has finished
                 data = client.socket.recv(1024)
                 if data:
-                    # TODO
+                    # TODO some error occurred - > unexpected EOF while parsing (<string>, line 1)
+                    # TODO but was not possible to track it
                     res = eval(str(data, 'utf-8'))
-                    socket_io.emit('geosquizzy', {'status': 2, 'data': res})
+                    if res == 0:
+                        socket_io.emit('geosquizzy', {'status': 0, 'data': None})
+                        break
+                    else:
+                        socket_io.emit('geosquizzy', {'status': 2, 'data': res})
 
         except (Exception,) as err:
             print(err)
-
-        socket_io.emit('geosquizzy', {'status': 0, 'data': None})
+        # socket_io.emit('geosquizzy', {'status': 0, 'data': None})
