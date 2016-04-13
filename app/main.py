@@ -1,14 +1,12 @@
-from flask import (Flask, request, jsonify, make_response)
-from flask_socketio import (SocketIO, emit)
-from flask import make_response
-from bson.json_util import dumps, loads
-import json
 import threading
 import multiprocessing
+from flask import (Flask, request, jsonify, make_response)
+from flask_socketio import (SocketIO, emit)
+
 
 from upload_service import (UploadService, MongoDBService)
 from utils import (random_charts_generator, encode_mongo_data)
-from views import view_geosquizzy_listening
+from views import (view_geosquizzy_listening,)
 
 
 app = Flask(__name__)
@@ -18,23 +16,57 @@ socket_io = SocketIO(app)
 doc_session = ''
 
 
-@app.route('/', methods=['GET'])
-def main():
-    return "MR. MIAU TEST PAGE :)"
-
-
 @socket_io.on('connect')
 def connect():
+    """
+    First connection with web-socket client we set doc_session
+    which will be used latter to reference mongodb collection
+    """
     print('connected')
-    pass
-
-
-@app.route('/upload', methods=['POST'])
-def upload():
     global doc_session
     doc_session = random_charts_generator()
+
+
+# @app.route('/upload', methods=['POST'])
+# def upload():
+#     # TODO possible to handle file sending by socket ? streaming ?
+#     global doc_session
+#     # doc_session = random_charts_generator()
+#     try:
+#         # TODO
+#         # multiprocessing here
+#         # if not (request.files.get('file', None) is None):
+#         #     UploadService(request=request, session=doc_session)
+#         # else:
+#         socket_thread = threading.Thread(target=view_geosquizzy_listening, args=(app, socket_io, 5))
+#         upload_params = {'url': 'https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
+#                                 'master/build_big_data/test_data/ExampleDataPoint.json',
+#                          'session': doc_session}
+#         upload_process = multiprocessing.Process(target=UploadService,
+#                                                  kwargs=upload_params)
+#
+#         socket_thread.start()
+#         upload_process.start()
+#
+#         socket_thread.join()
+#         upload_process.join()
+#
+#         # upload_service = UploadService(url='https://raw.githubusercontent.com/LowerSilesians/geo-squizzy/'
+#         #                                    'master/build_big_data/test_data/ExampleDataPoint.json',
+#         #                                session=doc_session)
+#
+#         # data = upload_service.response()
+#         res = {'status': 200}
+#     except Exception as e:
+#         print(e)
+#         res = {'status': 401}
+#
+#     return jsonify(res)
+
+@socket_io.on('demo')
+def demo():
+    global doc_session
     try:
-        # TODO
         # multiprocessing here
         # if not (request.files.get('file', None) is None):
         #     UploadService(request=request, session=doc_session)
@@ -57,28 +89,32 @@ def upload():
         #                                session=doc_session)
 
         # data = upload_service.response()
-        res = {'status': 200}
-    except Exception as e:
+        # res = {'status': 200}
+    except (Exception,) as e:
         print(e)
-        res = {'status': 401}
-
-    return jsonify(res)
+        socket_io.emit('demo', {'code': 1501, 'message': 'Server Error'})
 
 
-# @app.route('/search', methods=['POST'])
-# def search():
-#     global doc_session
-#     print(doc_session)
-#     try:
-#         mongo = MongoDBService(port=27017, url='localhost', db='test', collection=doc_session)
-#         cur = mongo.make_search_query(query=request.get_json()['query'])
-#         data = [x for x in cur]
-#         res = {'status': 200, 'data': data}
-#     except Exception as e:
-#         print(e)
-#         res = {'status': 401, 'data': []}
-#     mongo_translation = encode_mongo_data(res)
-#     return make_response(jsonify(mongo_translation))
+@socket_io.on('search')
+def search(data):
+    """
+    @global doc_session is set when connect socket is emitted from client web-socket
+    """
+    global doc_session
+    try:
+        mongo = MongoDBService(port=27017, url='localhost', db='test', collection=doc_session)
+        cur = mongo.make_search_query(query=data['query'])
+        data = [x for x in cur]
+        if data:
+            mongo_translation = encode_mongo_data(data)
+            """ code 1000 results for search query """
+            socket_io.emit('data', {'code': 1000, 'data': mongo_translation})
+        else:
+            """ code 1401 no results for search query """
+            socket_io.emit('data', {'code': 1401, 'data': []})
+    except (Exception,) as err:
+            """ code 1501 internal app error """
+            socket_io.emit('data', {'code': 1501, 'message': 'Server Error'})
 
 if __name__ == '__main__':
     # socket_io.run(app, port=8000)

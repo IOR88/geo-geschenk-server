@@ -18,12 +18,9 @@ def view_geosquizzy_listening(app, socket_io, timeout):
             client.connect()
             # start = time.time()
             while True:
-                # connection will never end because demon is running in bg
-                # geosquizzy has to send some 0 message that it has finished
                 data = client.socket.recv(1024)
                 if data:
                     # TODO some error occurred - > unexpected EOF while parsing (<string>, line 1)
-                    # TODO but was not possible to track it
                     res = eval(str(data, 'utf-8'))
                     if res == 0:
                         socket_io.emit('geosquizzy', {'status': 0, 'data': None})
@@ -33,4 +30,3 @@ def view_geosquizzy_listening(app, socket_io, timeout):
 
         except (Exception,) as err:
             print(err)
-        # socket_io.emit('geosquizzy', {'status': 0, 'data': None})
